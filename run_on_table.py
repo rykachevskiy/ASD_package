@@ -28,7 +28,6 @@ if __name__ == '__main__':
     target_rows_list = []
 
     for train_index, test_index in loo.split(table):
-        print(test_index)
         train_table = table[train_index]
         test_table = table[test_index]
 
@@ -43,13 +42,3 @@ if __name__ == '__main__':
 
     np.save(args.output_table_path, target_rows)
 
-
-
-
-    # path = "../data/filtered.bed"
-    # file = open(path, 'rb')
-    #
-    # t = read_alleles_to_num(0, 10, [True]*4 + [False]*1 +[True]*4 + [False]*1, file, use_pd=False)
-    #
-    # file.close()
-    # print(t[:4])
