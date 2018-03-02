@@ -71,11 +71,11 @@ def check_p_vals(column, case_control_mask, tests_mask=[True]*5):
 
     return p
 
-def check_table(table, case_contol_mask, cut=500):
+def check_table(table, case_contol_mask, tests_mask = [True, True, True, False, True], cut=500):
     min_p_vals = np.ones(table.shape[1])
 
     for i in range(table.shape[1]):
-        p_vals = check_p_vals(table[:, i], case_contol_mask, [False, False, False, False, True])
+        p_vals = check_p_vals(table[:, i], case_contol_mask, tests_mask)
         min_p_vals[i] = p_vals.min()
 
     return min_p_vals.argsort()[:cut], np.sort(min_p_vals)[:cut]

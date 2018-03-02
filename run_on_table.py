@@ -35,7 +35,7 @@ if __name__ == '__main__':
         train_case_control = case_control[train_index]
         test_case_control = case_control[test_index]
 
-        rows, pvals = check_table(train_table, train_case_control.astype(bool), args.rows_number)
+        rows, pvals = check_table(train_table, train_case_control.astype(bool), cut = args.rows_number)
         target_rows_list.append(rows)
         target_pvals_list.append(pvals)
 
