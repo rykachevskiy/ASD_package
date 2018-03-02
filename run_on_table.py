@@ -26,6 +26,7 @@ if __name__ == '__main__':
     loo = LeaveOneOut()
 
     target_rows_list = []
+    target_pvals_list = []
 
     for train_index, test_index in loo.split(table):
         train_table = table[train_index]
@@ -34,11 +35,14 @@ if __name__ == '__main__':
         train_case_control = case_control[train_index]
         test_case_control = case_control[test_index]
 
-        target_rows_list.append(check_table(train_table, train_case_control, args.rows_number))
+        rows, pvals = check_table(train_table, train_case_control.astype(bool), args.rows_number)
+        target_rows_list.append(rows)
+        target_pvals_list.append(pvals)
 
-    target_rows = np.concatenate([x.reshape(-1,1) for x in target_rows_list], 1)
+    target_rows = np.concatenate([x.reshape(1,-1) for x in target_rows_list], 0)
+    target_pvals = np.concatenate([x.reshape(1,-1) for x in target_pvals_list], 0)
 
     print(target_rows.shape)
 
     np.save(args.output_table_path, target_rows)
-
+    np.save(args.output_table_path+"_pvals", target_pvals)

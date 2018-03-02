@@ -53,6 +53,7 @@ def table_wrap(table):
 
 def check_p_vals(column, case_control_mask, tests_mask=[True]*5):
     table = np.zeros((2, 3))
+
     table[0][0] = (column[case_control_mask] == 0).sum()
     table[0][1] = (column[case_control_mask] == 1).sum()
     table[0][2] = (column[case_control_mask] == 2).sum()
@@ -60,15 +61,13 @@ def check_p_vals(column, case_control_mask, tests_mask=[True]*5):
     table[1][0] = (column[np.logical_not(case_control_mask)] == 0).sum()
     table[1][1] = (column[np.logical_not(case_control_mask)] == 1).sum()
     table[1][2] = (column[np.logical_not(case_control_mask)] == 2).sum()
-
     p = np.ones(5)
 
     for i, table_creator in enumerate([to_table_2x3, to_0vs12, to_01vs2, to_02vs1, to_allelic]):
         if tests_mask[i]:
-            new_table = table_wrap(table_creator(table))
-            p[i] = chi2_contingency(new_table, False)[1]
+            new_table = table_wrap(table_creator(np.copy(table)))
+            p[i] = chi2_contingency(new_table, True)[1]
 
-    last_table = to_0vs12(table)
 
     return p
 
@@ -77,9 +76,8 @@ def check_table(table, case_contol_mask, cut=500):
 
     for i in range(table.shape[1]):
         p_vals = check_p_vals(table[:, i], case_contol_mask, [False, False, False, False, True])
-
         min_p_vals[i] = p_vals.min()
 
-    return min_p_vals.argsort()[:cut]
+    return min_p_vals.argsort()[:cut], np.sort(min_p_vals)[:cut]
 
 
