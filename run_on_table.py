@@ -7,7 +7,9 @@ from sklearn.model_selection import LeaveOneOut
 import argparse
 
 from lib.config import *
-from lib.row_cheker import check_table
+import lib.row_cheker as rch
+
+import time
 
 
 if __name__ == '__main__':
@@ -23,21 +25,29 @@ if __name__ == '__main__':
     print(table.shape)
     case_control = np.array([0] * 407 + [1] * 21)
 
+    print("Starting on original table...")
+    table_2x3 = rch.check_initial_table(table, case_control.astype(bool))
+
+    assert all(table_2x3.sum(1).sum(1) == 428)
+
     loo = LeaveOneOut()
 
     target_rows_list = []
     target_pvals_list = []
 
+    chi2_hash = dict()
+
     for train_index, test_index in loo.split(table):
-        train_table = table[train_index]
-        test_table = table[test_index]
-
-        train_case_control = case_control[train_index]
-        test_case_control = case_control[test_index]
-
-        rows, pvals = check_table(train_table, train_case_control.astype(bool), cut = args.rows_number)
+        beg = time.time()
+        rows, pvals = rch.check_loo_table(table_2x3,
+                                          case_control[test_index],
+                                          table[test_index].flatten(),
+                                          chi2_hash,
+                                          cut=args.rows_number)
         target_rows_list.append(rows)
         target_pvals_list.append(pvals)
+        end = time.time()
+        print("Done with index {} in {} seconds".format(test_index, end - beg))
 
     target_rows = np.concatenate([x.reshape(1,-1) for x in target_rows_list], 0)
     target_pvals = np.concatenate([x.reshape(1,-1) for x in target_pvals_list], 0)
