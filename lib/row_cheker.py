@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import chi2_contingency
-
+import tqdm
 
 def to_table_2x3(table):
     return table
@@ -65,7 +65,7 @@ def calc_2x3_table(column, case_control_mask):
     return table
 
 
-def check_p_vals(table, chi2_hash, tests_mask=[True] * 5):
+def check_p_vals(table, chi2_hash, update_hash=False, tests_mask=[True] * 5):
     p = np.ones(5)
 
     for i, table_creator in enumerate([to_table_2x3, to_0vs12, to_01vs2, to_02vs1, to_allelic]):
@@ -78,7 +78,8 @@ def check_p_vals(table, chi2_hash, tests_mask=[True] * 5):
             else:
                 chi2_value = chi2_contingency(new_table, True)[1]
                 p[i] = chi2_value
-                chi2_hash[table_tuple] = chi2_value
+                if update_hash:
+                    chi2_hash[table_tuple] = chi2_value
     return p
 
 
@@ -92,14 +93,14 @@ def check_initial_table(data, case_contol_mask):
     return all_tables
 
 
-def check_loo_table(sumed_tables_2x3, drop_status, drop_row, chi2_hash, tests_mask = [True, True, True, False, True], cut=500):
+def check_loo_table(sumed_tables_2x3, drop_status, drop_row, chi2_hash, update_hash=False, tests_mask = [True, True, True, False, True], cut=500):
     min_p_vals = np.ones(sumed_tables_2x3.shape[0])
 
-    for i in range(sumed_tables_2x3.shape[0]):
+    for i in tqdm.tqdm(range(sumed_tables_2x3.shape[0])):
         table = np.copy(sumed_tables_2x3[i])
         table[drop_status, drop_row[i]] -= 1
 
-        p_vals = check_p_vals(table, chi2_hash, tests_mask)
+        p_vals = check_p_vals(table, chi2_hash, update_hash, tests_mask)
         min_p_vals[i] = p_vals.min()
 
     return min_p_vals.argsort()[:cut], np.sort(min_p_vals)[:cut]
