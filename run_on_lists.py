@@ -31,11 +31,9 @@ if __name__ == '__main__':
 
     predictions = np.zeros(HUMANS)
 
-
     for i, (train_index, test_index) in enumerate(loo.split(table)):
         curr_rows_mask = rows_masks[i]
         curr_table, _, _ = clean_table_2(table[:, curr_rows_mask])
-
 
         train_table = curr_table[train_index]
         test_table = curr_table[test_index]
